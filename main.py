@@ -23,7 +23,7 @@ class Player:
             if middleCard > left:
                 self.hand = (middleCard, middle, right)
                 return left
-            else if middleCard < right:
+            elif middleCard < right:
                 self.hand = (left, middle, middleCard)
                 return right
             else:
@@ -33,22 +33,27 @@ class Player:
             if middleCard < left:
                 self.hand = (middleCard, middle, right)
                 return left
-            else if middleCard > right:
+            elif middleCard > right:
                 self.hand = (left, middle, middleCard)
                 return right
             else:
                 self.hand = (left, middleCard, right)
                 return middle
 
-    def isInOrder():
-        pass
+    def isInOrder(self):
+        left, middle, right = self.hand
+
+        ascending = (left < middle) and (middle < right)
+        descending = (left > middle) and (middle > right)
+        return ascending or descending
 
 def deal():
-    cardList = [1:7]
+    cardList = [x for x in range(1, 8)]
+    print(cardList)
     cards = []
 
     while len(cardList) > 0:
-        index = Random.randint(0, len(cardList) - 1)
+        index = random.randint(0, len(cardList) - 1)
         cards.append(cardList.pop(index))
 
     playerOne = Player("playerOne", (cards[0], cards[1], cards[2]))
@@ -70,9 +75,9 @@ if __name__ == "__main__":
             winningPlayer = currentPlayer
 
         left, middle, right = currentPlayer.hand
-        print "{0}: ({1}, {2}, {3})".format(currentPlayer.name, left, middle, right)
-        print "middleCard: {0}".format(middleCard)
+        print ("%s: (%d, %d, %d)" % (currentPlayer.name, left, middle, right))
+        print ("middleCard: %d" % (middleCard))
 
         playerOrder = (nextPlayer, currentPlayer)
 
-    print "{0} won the game!".format(winningPlayer.name)
+    print ("%s won the game!" % (winningPlayer.name))
