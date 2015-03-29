@@ -44,7 +44,7 @@ class Node:
         self.children = None
 
 def genNodes_recursiveHelper(node, isMax, depth):
-    if depth < 3:
+    if depth < 4:
         left, middle, right = (node.maxHand if isMax else node.minHand)
 
         leftSwap = (node.middleCard, middle, right)
