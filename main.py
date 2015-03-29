@@ -4,7 +4,7 @@
 from enum import Enum
 import random
 
-def evalHand(self, hand):
+def evalHand(hand):
     retval = 0
     left, middle, right = hand
 
@@ -71,8 +71,8 @@ def genNodes_recursiveHelper(node, isMax, depth):
 
     return node
 
-def genNodes(playerMax, playerMin, middleCard):
-    rootNode = Node(playerMax.hand, playerMin.hand, middleCard)
+def genNodes(maxHand, minHand, middleCard):
+    rootNode = Node(maxHand, minHand, middleCard)
     return genNodes_recursiveHelper(rootNode, True, 0)
 
 def printLeaf(node, h, isPruned):
@@ -80,7 +80,7 @@ def printLeaf(node, h, isPruned):
     minLeft, minMiddle, minRight = node.minHand
     maxLeft, maxMiddle, maxRight = node.maxHand
     values = (minLeft, minMiddle, minRight, node.middleCard, maxLeft, maxMiddle, maxRight, h, prunedString)
-    print("(min = {%d, %d, %d}) (middle = %d) (max = {%d, %d, %d}) -> (h = %d) (pruned = %s") % values)
+    print("(min = {%d, %d, %d}) (middle = %d) (max = {%d, %d, %d}) -> (h = %d) (pruned = %s)" % values)
 
 def shouldPrune(h, parentH, isMax):
     if isMax and (h > parentH):
@@ -91,7 +91,7 @@ def shouldPrune(h, parentH, isMax):
     return False
 
 def pruneNodes_recursiveHelper(node, isMax, parentH, isPruned):
-    h = eval(node.maxHand if isMax else node.minHand)
+    h = evalHand(node.maxHand if isMax else node.minHand)
 
     if node.children:
         left, middle, right = node.children
@@ -113,8 +113,7 @@ def pruneNodes_recursiveHelper(node, isMax, parentH, isPruned):
     return h
 
 def pruneNodes(rootNode):
-    result = pruneNodes_recursiveHelper(rootNode, False, float("Inf"))
-    return result.h
+    return pruneNodes_recursiveHelper(rootNode, False, float("Inf"), False)
 
 if __name__ == "__main__":
     maxHand, minHand, middleCard = deal()
