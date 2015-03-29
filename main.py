@@ -3,51 +3,27 @@
 from enum import Enum
 import random
 
-class CardPosition(Enum):
-    LEFT = 0
-    MIDDLE = 1
-    RIGHT = 2
+
+def evalHand(self, hand):
+    retval = 0
+    left, middle, right = hand
+
+    if left > middle then ++retval
+    if middle > right then ++retval
+    if left > right then ++retval
+
+    return retval
 
 class Player:
-    def __init__(self, inName, inHand):
-        left, middle, right = inHand
+    def __init__(self, name, hand):
+        self.hand = hand
+        self.name = name
 
-        self.name = inName
-        self.reversed = (left > right)
-        self.hand = (left, middle, right)
+    def complete(self):
+        return abs(evalHand(self.hand)) == 3
 
-    def chooseMove(self, middleCard):
-        left, middle, right = self.hand
-
-        if reversed:
-            if middleCard > left:
-                self.hand = (middleCard, middle, right)
-                return left
-            elif middleCard < right:
-                self.hand = (left, middle, middleCard)
-                return right
-            else:
-                self.hand = (left, middleCard, right)
-                return middle
-        else:
-            if middleCard < left:
-                self.hand = (middleCard, middle, right)
-                return left
-            elif middleCard > right:
-                self.hand = (left, middle, middleCard)
-                return right
-            else:
-                self.hand = (left, middleCard, right)
-                return middle
-
-    def isInOrder(self):
-        left, middle, right = self.hand
-
-        ascending = (left < middle) and (middle < right)
-        descending = (left > middle) and (middle > right)
-        return ascending or descending
-
-def deal():
+## version of deal with randomization.
+def deprecated_deal():
     cardList = [x for x in range(1, 8)]
     print(cardList)
     cards = []
@@ -56,28 +32,72 @@ def deal():
         index = random.randint(0, len(cardList) - 1)
         cards.append(cardList.pop(index))
 
-    playerOne = Player("playerOne", (cards[0], cards[1], cards[2]))
-    playerTwo = Player("playerTwo", (cards[3], cards[4], cards[5]))
-    return (playerOne, playerTwo, cards[6])
+    playerMax = Player("max", (cards[0], cards[2], cards[4]))
+    playerMin = Player("min", (cards[1], cards[3], cards[5]))
+    return (playerMax, playerMin, cards[6])
+
+def deal():
+    playerMax = Player("max", (6, 3, 1))
+    playerMin = Player("min", (7, 5, 2))
+    return (playerMax, playerMin, 4)
+
+class Node:
+    def __init__(self, maxHand, minHand, middleCard):
+        self.maxHand = maxHand
+        self.minHand = minHand
+        self.middleCard = middleCard
+        self.children = None
+
+def genNodes_recursiveHelper(node, isMax, depth):
+    if depth < 3:
+        left, middle, right = (if isMax then node.maxHand else node.minHand)
+
+        leftSwap = (node.middleCard, middle, right)
+        middleSwap = (left, node.middleCard, right)
+        rightSwap = (left, middle, node.middleCard)
+
+        maxHand = (if isMax then leftSwap else node.maxHand)
+        minHand = (if isMax then node.minHand else leftSwap)
+        leftChild = Node(maxHand, minHand, left)
+
+        maxHand = (if isMax then middleSwap else node.maxHand)
+        minHand = (if isMax then node.minHand else middleSwap)
+        middleChild = Node(maxHand, minHand, middle)
+
+        maxHand = (if isMax then rightSwap else node.maxHand)
+        minHand = (if isMax then node.minHand else rightSwap)
+        rightChild = Node(maxHand, minHand, right)
+
+        leftChild = genNodes_recursiveHelper(leftChild, not isMax, depth + 1)
+        middleChild = genNodes_recursiveHelper(middleChild, not isMax, depth + 1)
+        rightChild = genNodes_recursiveHelper(rightChild, not isMax, depth + 1)
+
+        node.children = (leftChild, middleChild, rightChild)
+
+    return node
+
+def genNodes(playerMax, playerMin, middleCard):
+    rootNode = Node(playerMax.hand, playerMin.hand, middleCard)
+    return genNodes_recursiveHelper(rootNode, True, 0)
+
+def pruneNodes_recursiveHelper():
+    pass
+
+def pruneNodes():
+    pass
+
+def evalMove(hand, middleCard):
+    left, middle, right = hand
+
+    hl = evalHand((middleCard, middle, right))
+    hm = evalHand((left, middleCard, right))
+    hr = evalHand((left, middle, middleCard))
+
+    return (hl, hm, hr)
 
 if __name__ == "__main__":
-    gameOver = False
-    winningPlayer = None
-    playerOne, playerTwo, middleCard = deal()
-    playerOrder = (playerOne, playerTwo)
+    playerMax, playerMin, middleCard = deal()
+    rootNode = genNodes(playerMax, playerMin, middleCard)
+    result = pruneNodes(rootNode)
 
-    while not gameOver:
-        currentPlayer, nextPlayer = playerOrder
-        middleCard = currentPlayer.chooseMove(middleCard)
-
-        if currentPlayer.isInOrder():
-            gameOver = True
-            winningPlayer = currentPlayer
-
-        left, middle, right = currentPlayer.hand
-        print ("%s: (%d, %d, %d)" % (currentPlayer.name, left, middle, right))
-        print ("middleCard: %d" % (middleCard))
-
-        playerOrder = (nextPlayer, currentPlayer)
-
-    print ("%s won the game!" % (winningPlayer.name))
+    print ("Result: %d" % (result))
