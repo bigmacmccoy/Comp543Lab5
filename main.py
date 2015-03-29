@@ -9,12 +9,13 @@ class CardPosition(Enum):
     RIGHT = 2
 
 class Player:
-    def __init__(self, inName, inHand):
+    def __init__(self, inName, inHand, isMax):
         left, middle, right = inHand
 
         self.name = inName
         self.reversed = (left > right)
         self.hand = (left, middle, right)
+        self.isMax = isMax
 
     def chooseMove(self, middleCard):
         left, middle, right = self.hand
@@ -56,8 +57,8 @@ def deal():
         index = random.randint(0, len(cardList) - 1)
         cards.append(cardList.pop(index))
 
-    playerOne = Player("playerOne", (cards[0], cards[1], cards[2]))
-    playerTwo = Player("playerTwo", (cards[3], cards[4], cards[5]))
+    playerOne = Player("playerOne", (cards[0], cards[2], cards[4]), True)
+    playerTwo = Player("playerTwo", (cards[1], cards[3], cards[5]), False)
     return (playerOne, playerTwo, cards[6])
 
 if __name__ == "__main__":
@@ -67,17 +68,63 @@ if __name__ == "__main__":
     playerOrder = (playerOne, playerTwo)
 
     while not gameOver:
-        currentPlayer, nextPlayer = playerOrder
-        middleCard = currentPlayer.chooseMove(middleCard)
+        h = 0
+        # PLAYER ONE
+        middleCard = playerOne.chooseMove(middleCard)
 
-        if currentPlayer.isInOrder():
+        if playerOne.isInOrder():
             gameOver = True
-            winningPlayer = currentPlayer
+            winningPlayer = playerOne
 
-        left, middle, right = currentPlayer.hand
-        print ("%s: (%d, %d, %d)" % (currentPlayer.name, left, middle, right))
+        left, middle, right = playerOne.hand
+        if(playerOne.isMax):
+            if(left > middle):
+                h += 1
+            if(left > right):
+                h += 1
+            if(middle > right):
+                h += 1
+        else:
+            if(left > middle):
+                h -= 1
+            if(left > right):
+                h -= 1
+            if(middle > right):
+                h -= 1
+
+        print ("%s: (%d, %d, %d)" % (playerOne.name, left, middle, right))
         print ("middleCard: %d" % (middleCard))
 
-        playerOrder = (nextPlayer, currentPlayer)
+        # PLAYER TWO
+        middleCard = playerTwo.chooseMove(middleCard)
+
+        if playerTwo.isInOrder():
+            gameOver = True
+            winningPlayer = playerTwo
+
+        left, middle, right = playerTwo.hand
+        if(playerTwo.isMax):
+            if(left > middle):
+                h += 1
+            if(left > right):
+                h += 1
+            if(middle > right):
+                h += 1
+        else:
+            if(left > middle):
+                h -= 1
+            if(left > right):
+                h -= 1
+            if(middle > right):
+                h -= 1
+
+        print ("%s: (%d, %d, %d)" % (playerTwo.name, left, middle, right))
+        print ("middleCard: %d" % (middleCard))
+
+        
 
     print ("%s won the game!" % (winningPlayer.name))
+    if(winningPlayer.isMax):
+        print("+1")
+    else:
+        print("-1")
